@@ -183,7 +183,7 @@
     </div>
 
     <script>
-        // الحصول على المراجع إلى عناصر DOM باستخدام معرفاتها
+        // Getting references to DOM elements by their IDs
         const fetchNewHadithBtn = document.getElementById('fetchNewHadithBtn');
         const explainHadithBtn = document.getElementById('explainHadithBtn');
         const extractLessonsBtn = document.getElementById('extractLessonsBtn');
@@ -227,7 +227,7 @@
         const practicalApplicationsErrorDisplay = document.getElementById('practicalApplicationsErrorDisplay');
         const aiAnswerErrorDisplay = document.getElementById('aiAnswerErrorDisplay');
 
-        // قائمة بكتب الحديث المتاحة وعدد الأحاديث فيها
+        // List of available Hadith books and their available count
         const hadithBooksData = [
             { name: "HR. Abu Daud", id: "abu-daud", available: 4419 },
             { name: "HR. Ahmad", id: "ahmad", available: 4305 },
@@ -240,27 +240,27 @@
             { name: "HR. Tirmidzi", id: "tirmidzi", available: 3625 }
         ];
 
-        // متغيرات للتعامل مع Web Speech API (تم حذفها)
+        // Speech Synthesis variables (kept for reading out AI answers)
         let synth;
         let arabicVoice;
 
-        // تهيئة SpeechSynthesis (تم الاحتفاظ بها للقراءة الصوتية للإجابات)
+        // Initialize SpeechSynthesis
         if ('speechSynthesis' in window) {
             synth = window.speechSynthesis;
             synth.onvoiceschanged = () => {
                 const voices = synth.getVoices();
                 arabicVoice = voices.find(voice => voice.lang.startsWith('ar')) || voices.find(voice => voice.lang.includes('ar'));
                 if (!arabicVoice) {
-                    console.warn('لم يتم العثور على صوت عربي. سيتم استخدام الصوت الافتراضي.');
+                    console.warn('No Arabic voice found. Default voice will be used.');
                 }
             };
         } else {
-            console.warn('متصفحك لا يدعم إخراج الصوت.');
+            console.warn('Your browser does not support speech output.');
         }
 
         /**
-         * دالة مساعدة لتعطيل أو تفعيل جميع الأزرار.
-         * @param {boolean} disable - true لتعطيل الأزرار، false لتفعيلها.
+         * Helper function to disable or enable all buttons.
+         * @param {boolean} disable - true to disable buttons, false to enable them.
          */
         function disableAllButtons(disable) {
             fetchNewHadithBtn.disabled = disable;
@@ -275,7 +275,7 @@
             copyAIAnswerBtn.disabled = disable;
         }
 
-        // وظيفة مساعدة لإخفاء جميع رسائل الحالة والمناطق الإضافية وحالات النسخ
+        // Helper function to hide all status messages, extra display areas, and copy statuses
         function hideAllStatusMessages() {
             loadingIndicator.classList.add('hidden');
             explanationLoadingIndicator.classList.add('hidden');
@@ -292,7 +292,7 @@
             practicalApplicationsDisplay.classList.add('hidden');
             aiAnswerDisplay.classList.add('hidden');
 
-            // إخفاء رسائل حالة النسخ
+            // Hide copy status messages
             hadithCopyStatus.classList.add('hidden');
             explanationCopyStatus.classList.add('hidden');
             lessonsCopyStatus.classList.add('hidden');
@@ -301,10 +301,10 @@
         }
 
         /**
-         * دالة مساعدة لنسخ النص إلى الحافظة.
-         * تستخدم document.execCommand('copy') لأن navigator.clipboard قد لا يعمل في بيئات iframe.
-         * @param {string} textToCopy - النص المراد نسخه.
-         * @param {HTMLElement} statusElement - العنصر الذي سيعرض رسالة الحالة (مثل "تم النسخ!").
+         * Helper function to copy text to clipboard.
+         * Uses document.execCommand('copy') as navigator.clipboard.writeText() might not work in iframe environments.
+         * @param {string} textToCopy - The text to be copied.
+         * @param {HTMLElement} statusElement - The element that will display the status message (e.g., "Copied!").
          */
         function copyTextToClipboard(textToCopy, statusElement) {
             const tempTextArea = document.createElement('textarea');
@@ -317,32 +317,32 @@
                     statusElement.classList.remove('hidden');
                     setTimeout(() => {
                         statusElement.classList.add('hidden');
-                    }, 2000); // إخفاء الرسالة بعد 2 ثانية
+                    }, 2000); // Hide message after 2 seconds
                 }
             } catch (err) {
                 console.error('Failed to copy text: ', err);
-                // يمكن إضافة رسالة خطأ مرئية للمستخدم هنا إذا لزم الأمر
+                // Optionally, add a visible error message to the user here
             } finally {
                 document.body.removeChild(tempTextArea);
             }
         }
 
         /**
-         * دالة غير متزامنة لجلب حديث عشوائي من كتاب محدد.
-         * يتم اختيار رقم عشوائي ضمن مدى الأحاديث المتاحة في الكتاب.
+         * Asynchronous function to fetch a random hadith from a selected book.
+         * A random number is chosen within the available range of hadiths for the book.
          */
         async function fetchHadithOfTheDay() {
-            hideAllStatusMessages(); // إخفاء جميع الرسائل قبل البدء
+            hideAllStatusMessages(); // Hide all messages before starting
             loadingIndicator.classList.remove('hidden');
-            disableAllButtons(true); // تعطيل جميع الأزرار
+            disableAllButtons(true); // Disable all buttons
 
             try {
-                // اختيار كتاب عشوائي من قائمة الكتب المتاحة
+                // Choose a random book from the list of available books
                 const randomBookData = hadithBooksData[Math.floor(Math.random() * hadithBooksData.length)];
                 const randomBookId = randomBookData.id;
                 const maxHadithNumber = randomBookData.available;
 
-                // اختيار رقم حديث عشوائي ضمن النطاق المتاح لهذا الكتاب
+                // Choose a random hadith number within the available range for this book
                 const randomHadithNumber = Math.floor(Math.random() * maxHadithNumber) + 1;
 
                 const apiUrl = `https://api.hadith.gading.dev/books/${randomBookId}/${randomHadithNumber}`;
@@ -359,23 +359,23 @@
                     hadithSource.textContent = `المصدر: ${data.data.name} - حديث رقم ${data.data.contents.number}`;
                 } else {
                     console.warn(`Hadith not found for ${randomBookId} at number ${randomHadithNumber}. Trying again.`);
-                    await fetchHadithOfTheDay();
-                    return;
+                    await fetchHadithOfTheDay(); // Try fetching another hadith
+                    return; // End current execution to avoid updating the UI twice
                 }
 
             } catch (error) {
-                console.error('حدث خطأ أثناء جلب الحديث:', error);
+                console.error('Error fetching hadith:', error);
                 errorDisplay.classList.remove('hidden');
                 hadithText.textContent = 'تعذر جلب الحديث. يرجى المحاولة لاحقاً.';
                 hadithSource.textContent = 'المصدر: -';
             } finally {
                 loadingIndicator.classList.add('hidden');
-                disableAllButtons(false); // إعادة تفعيل جميع الأزرار
+                disableAllButtons(false); // Re-enable all buttons
             }
         }
 
         /**
-         * دالة غير متزامنة لشرح الحديث باستخدام Gemini API.
+         * Asynchronous function to explain the hadith using Gemini API.
          */
         async function explainHadith() {
             const currentHadith = hadithText.textContent;
@@ -386,9 +386,9 @@
                 return;
             }
 
-            hideAllStatusMessages(); // إخفاء جميع الرسائل والمناطق الأخرى
+            hideAllStatusMessages(); // Hide all other messages and areas
             explanationLoadingIndicator.classList.remove('hidden');
-            disableAllButtons(true); // تعطيل جميع الأزرار
+            disableAllButtons(true); // Disable all buttons
 
             try {
                 const prompt = `اشرح الحديث التالي بأسلوب مبسط ومختصر، مع التركيز على المعنى العام والفائدة المستفادة منه، وبما لا يتجاوز 150 كلمة، مع ذكر المصدر إن أمكن: "${currentHadith}"`;
@@ -396,7 +396,13 @@
                 let chatHistory = [];
                 chatHistory.push({ role: "user", parts: [{ text: prompt }] });
                 const payload = { contents: chatHistory };
-                const apiKey = "";
+                // IMPORTANT: When deploying this application outside of the Google Canvas environment,
+                // you need to provide your own Gemini API Key.
+                // You can get one from Google AI Studio: https://aistudio.google.com/app/apikey
+                //
+                // WARNING: Directly embedding API keys in client-side code is NOT secure for production applications.
+                // For production, it is highly recommended to use a backend proxy server to keep your API key secure.
+                const apiKey = "AIzaSyDbeleLFWRXBWVMS7eyzRvoR6Sj-wsIjwY"; // <-- مفتاح الـ API الخاص بك هنا
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
                 const response = await fetch(apiUrl, {
@@ -418,18 +424,18 @@
                 }
 
             } catch (error) {
-                console.error('حدث خطأ أثناء شرح الحديث:', error);
+                console.error('Error explaining hadith:', error);
                 explanationErrorDisplay.classList.remove('hidden');
                 explanationText.textContent = 'تعذر شرح الحديث. يرجى المحاولة لاحقاً.';
                 explanationDisplay.classList.remove('hidden');
             } finally {
                 explanationLoadingIndicator.classList.add('hidden');
-                disableAllButtons(false); // إعادة تفعيل جميع الأزرار
+                disableAllButtons(false); // Re-enable all buttons
             }
         }
 
         /**
-         * دالة غير متزامنة لاستخلاص الدروس المستفادة من الحديث باستخدام Gemini API.
+         * Asynchronous function to extract lessons learned from the hadith using Gemini API.
          */
         async function extractLessons() {
             const currentHadith = hadithText.textContent;
@@ -440,9 +446,9 @@
                 return;
             }
 
-            hideAllStatusMessages(); // إخفاء جميع الرسائل والمناطق الأخرى
+            hideAllStatusMessages(); // Hide all other messages and areas
             lessonsLoadingIndicator.classList.remove('hidden');
-            disableAllButtons(true); // تعطيل جميع الأزرار
+            disableAllButtons(true); // Disable all buttons
 
             try {
                 const prompt = `استخلص أهم 3-5 دروس أو فوائد مستفادة من الحديث التالي بأسلوب نقطي ومختصر: "${currentHadith}"`;
@@ -450,7 +456,13 @@
                 let chatHistory = [];
                 chatHistory.push({ role: "user", parts: [{ text: prompt }] });
                 const payload = { contents: chatHistory };
-                const apiKey = "";
+                // IMPORTANT: When deploying this application outside of the Google Canvas environment,
+                // you need to provide your own Gemini API Key.
+                // You can get one from Google AI Studio: https://aistudio.google.com/app/apikey
+                //
+                // WARNING: Directly embedding API keys in client-side code is NOT secure for production applications.
+                // For production, it is highly recommended to use a backend proxy server to keep your API key secure.
+                const apiKey = "AIzaSyDbeleLFWRXBWVMS7eyzRvoR6Sj-wsIjwY"; // <-- مفتاح الـ API الخاص بك هنا
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
                 const response = await fetch(apiUrl, {
@@ -472,18 +484,18 @@
                 }
 
             } catch (error) {
-                console.error('حدث خطأ أثناء استخلاص الدروس:', error);
+                console.error('Error extracting lessons:', error);
                 lessonsErrorDisplay.classList.remove('hidden');
                 lessonsText.textContent = 'تعذر استخلاص الدروس. يرجى المحاولة لاحقاً.';
                 lessonsDisplay.classList.remove('hidden');
             } finally {
                 lessonsLoadingIndicator.classList.add('hidden');
-                disableAllButtons(false); // إعادة تفعيل جميع الأزرار
+                disableAllButtons(false); // Re-enable all buttons
             }
         }
 
         /**
-         * دالة غير متزامنة لاقتراح تطبيقات عملية للحديث باستخدام Gemini API.
+         * Asynchronous function to generate practical applications for the hadith using Gemini API.
          */
         async function generatePracticalApplications() {
             const currentHadith = hadithText.textContent;
@@ -494,9 +506,9 @@
                 return;
             }
 
-            hideAllStatusMessages(); // إخفاء جميع الرسائل والمناطق الأخرى
+            hideAllStatusMessages(); // Hide all other messages and areas
             practicalApplicationsLoadingIndicator.classList.remove('hidden');
-            disableAllButtons(true); // تعطيل جميع الأزرار
+            disableAllButtons(true); // Disable all buttons
 
             try {
                 const prompt = `بناءً على الحديث التالي، اقترح 3-5 تطبيقات عملية أو خطوات يمكن للمسلم اتخاذها في حياته اليومية لتطبيق هذا الحديث، بأسلوب نقطي ومختصر: "${currentHadith}"`;
@@ -504,7 +516,13 @@
                 let chatHistory = [];
                 chatHistory.push({ role: "user", parts: [{ text: prompt }] });
                 const payload = { contents: chatHistory };
-                const apiKey = "";
+                // IMPORTANT: When deploying this application outside of the Google Canvas environment,
+                // you need to provide your own Gemini API Key.
+                // You can get one from Google AI Studio: https://aistudio.google.com/app/apikey
+                //
+                // WARNING: Directly embedding API keys in client-side code is NOT secure for production applications.
+                // For production, it is highly recommended to use a backend proxy server to keep your API key secure.
+                const apiKey = "AIzaSyDbeleLFWRXBWVMS7eyzRvoR6Sj-wsIjwY"; // <-- مفتاح الـ API الخاص بك هنا
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
                 const response = await fetch(apiUrl, {
@@ -526,18 +544,18 @@
                 }
 
             } catch (error) {
-                console.error('حدث خطأ أثناء اقتراح تطبيقات عملية:', error);
+                console.error('Error generating practical applications:', error);
                 practicalApplicationsErrorDisplay.classList.remove('hidden');
                 practicalApplicationsText.textContent = 'تعذر اقتراح تطبيقات عملية. يرجى المحاولة لاحقاً.';
                 practicalApplicationsDisplay.classList.remove('hidden');
             } finally {
                 practicalApplicationsLoadingIndicator.classList.add('hidden');
-                disableAllButtons(false); // إعادة تفعيل جميع الأزرار
+                disableAllButtons(false); // Re-enable all buttons
             }
         }
 
         /**
-         * دالة غير متزامنة للإجابة على سؤال المستخدم باستخدام Gemini API.
+         * Asynchronous function to answer user questions using Gemini API.
          */
         async function askAI() {
             const query = searchInput.value.trim();
@@ -548,9 +566,9 @@
                 return;
             }
 
-            hideAllStatusMessages(); // إخفاء جميع الرسائل والمناطق الأخرى
+            hideAllStatusMessages(); // Hide all other messages and areas
             aiAnswerLoadingIndicator.classList.remove('hidden');
-            disableAllButtons(true); // تعطيل جميع الأزرار
+            disableAllButtons(true); // Disable all buttons
 
             try {
                 const prompt = `أجب على السؤال التالي بناءً على معرفتك بالأحاديث والمفاهيم الإسلامية: "${query}". قدم إجابة شاملة ومختصرة.`;
@@ -558,7 +576,13 @@
                 let chatHistory = [];
                 chatHistory.push({ role: "user", parts: [{ text: prompt }] });
                 const payload = { contents: chatHistory };
-                const apiKey = "AIzaSyDbeleLFWRXBWVMS7eyzRvoR6Sj-wsIjwY";
+                // IMPORTANT: When deploying this application outside of the Google Canvas environment,
+                // you need to provide your own Gemini API Key.
+                // You can get one from Google AI Studio: https://aistudio.google.com/app/apikey
+                //
+                // WARNING: Directly embedding API keys in client-side code is NOT secure for production applications.
+                // For production, it is highly recommended to use a backend proxy server to keep your API key secure.
+                const apiKey = "AIzaSyDbeleLFWRXBWVMS7eyzRvoR6Sj-wsIjwY"; // <-- مفتاح الـ API الخاص بك هنا
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
                 const response = await fetch(apiUrl, {
@@ -576,7 +600,7 @@
                     aiAnswerText.textContent = answer;
                     aiAnswerDisplay.classList.remove('hidden');
 
-                    // قراءة الإجابة بصوت عالٍ (تم الاحتفاظ بها)
+                    // Read the answer aloud
                     if (synth && arabicVoice) {
                         const utterance = new SpeechSynthesisUtterance(answer);
                         utterance.voice = arabicVoice;
@@ -592,32 +616,32 @@
                 }
 
             } catch (error) {
-                console.error('حدث خطأ أثناء الإجابة على السؤال:', error);
+                console.error('Error answering question:', error);
                 aiAnswerErrorDisplay.classList.remove('hidden');
                 aiAnswerText.textContent = 'تعذر الإجابة على سؤالك. يرجى المحاولة لاحقاً.';
                 aiAnswerDisplay.classList.remove('hidden');
             } finally {
                 aiAnswerLoadingIndicator.classList.add('hidden');
-                disableAllButtons(false); // إعادة تفعيل جميع الأزرار
+                disableAllButtons(false); // Re-enable all buttons
             }
         }
 
-        // إضافة مستمع حدث 'click' لزر جلب حديث جديد
+        // Add click listener for "Fetch New Hadith" button
         fetchNewHadithBtn.addEventListener('click', fetchHadithOfTheDay);
 
-        // إضافة مستمع حدث 'click' لزر شرح الحديث
+        // Add click listener for "Explain Hadith" button
         explainHadithBtn.addEventListener('click', explainHadith);
 
-        // إضافة مستمع حدث 'click' لزر استخلاص الدروس
+        // Add click listener for "Extract Lessons" button
         extractLessonsBtn.addEventListener('click', extractLessons);
 
-        // إضافة مستمع حدث 'click' لزر التطبيقات العملية
+        // Add click listener for "Practical Applications" button
         practicalApplicationsBtn.addEventListener('click', generatePracticalApplications);
 
-        // إضافة مستمع حدث 'click' لزر اسأل الذكاء الاصطناعي
+        // Add click listener for "Ask AI" button
         askAIBtn.addEventListener('click', askAI);
 
-        // إضافة مستمعات الأحداث لأزرار النسخ
+        // Add click listeners for copy buttons
         copyHadithBtn.addEventListener('click', () => copyTextToClipboard(hadithText.textContent, hadithCopyStatus));
         copyExplanationBtn.addEventListener('click', () => copyTextToClipboard(explanationText.textContent, explanationCopyStatus));
         copyLessonsBtn.addEventListener('click', () => copyTextToClipboard(lessonsText.textContent, lessonsCopyStatus));
@@ -625,7 +649,7 @@
         copyAIAnswerBtn.addEventListener('click', () => copyTextToClipboard(aiAnswerText.textContent, aiAnswerCopyStatus));
 
 
-        // جلب حديث تلقائيًا عند تحميل الصفحة لأول مرة
+        // Fetch a hadith automatically on page load
         document.addEventListener('DOMContentLoaded', fetchHadithOfTheDay);
     </script>
 </body>
