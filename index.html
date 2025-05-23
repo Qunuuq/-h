@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حديث اليوم</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* استخدام خط Inter لتحسين جمالية النص وقابليته للقراءة */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* لون خلفية فاتح ومهدئ */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* يضمن أن الصفحة تأخذ كامل ارتفاع الشاشة */
+            margin: 0;
+            padding: 20px; /* مسافة داخلية حول المحتوى الرئيسي */
+            box-sizing: border-box; /* يضمن أن الحشوة لا تزيد من حجم العنصر */
+        }
+        /* تحديد اتجاه النص لليمين ومحاذاة النص لليمين للعناصر التي تحتاج ذلك بشكل خاص */
+        .text-arabic {
+            direction: rtl;
+            text-align: right;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white rounded-lg shadow-xl p-8 max-w-2xl w-full text-center border border-gray-200">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">حديث اليوم</h1>
+
+        <div class="mb-6">
+            <button id="fetchNewHadithBtn"
+                    class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg
+                           transition duration-300 ease-in-out transform hover:scale-105
+                           focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
+                حديث جديد
+            </button>
+        </div>
+
+        <div id="hadithDisplay" class="mt-8 p-6 bg-gray-50 rounded-lg border border-gray-200 text-arabic">
+            <p class="text-gray-700 text-lg leading-relaxed mb-4" id="hadithText">
+                اضغط على الزر أعلاه لجلب حديث شريف جديد.
+            </p>
+            <p class="text-gray-500 text-sm font-medium" id="hadithSource">
+                المصدر: -
+            </p>
+            <button id="copyHadithBtn"
+                    class="mt-4 bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-lg
+                           transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 text-sm">
+                نسخ الحديث
+            </button>
+            <span id="hadithCopyStatus" class="text-sm text-green-600 ml-2 hidden">تم النسخ!</span>
+        </div>
+
+        <div class="mt-4 flex flex-wrap justify-center gap-4">
+            <button id="explainHadithBtn"
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg
+                           transition duration-300 ease-in-out transform hover:scale-105
+                           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                ✨ اشرح الحديث
+            </button>
+            <button id="extractLessonsBtn"
+                    class="bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-6 rounded-lg
+                           transition duration-300 ease-in-out transform hover:scale-105
+                           focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50">
+                ✨ استخلص الدروس المستفادة
+            </button>
+            <button id="practicalApplicationsBtn"
+                    class="bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 px-6 rounded-lg
+                           transition duration-300 ease-in-out transform hover:scale-105
+                           focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50">
+                ✨ تطبيقات عملية
+            </button>
+        </div>
+
+        <div class="mb-6 mt-8 p-4 border border-gray-200 rounded-lg bg-gray-50">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">اسأل الذكاء الاصطناعي</h2>
+            <div class="mb-4 flex items-center justify-center gap-2">
+                <label for="searchInput" class="sr-only">اطرح سؤالك هنا:</label>
+                <input type="text" id="searchInput" placeholder="اطرح سؤالك هنا"
+                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+            <button id="askAIBtn"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg
+                           transition duration-300 ease-in-out transform hover:scale-105
+                           focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50">
+                💡 اسأل الذكاء الاصطناعي
+            </button>
+        </div>
+
+        <div id="explanationDisplay" class="hidden mt-8 p-6 bg-blue-50 rounded-lg border border-blue-200 text-arabic">
+            <h3 class="text-xl font-semibold text-blue-800 mb-2">شرح الحديث:</h3>
+            <p class="text-blue-800 text-lg leading-relaxed" id="explanationText">
+                الشرح سيظهر هنا...
+            </p>
+            <button id="copyExplanationBtn"
+                    class="mt-4 bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-lg
+                           transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 text-sm">
+                نسخ الشرح
+            </button>
+            <span id="explanationCopyStatus" class="text-sm text-green-600 ml-2 hidden">تم النسخ!</span>
+        </div>
+
+        <div id="lessonsDisplay" class="hidden mt-8 p-6 bg-orange-50 rounded-lg border border-orange-200 text-arabic">
+            <h3 class="text-xl font-semibold text-orange-800 mb-2">الدروس المستفادة:</h3>
+            <p class="text-orange-800 text-lg leading-relaxed" id="lessonsText">
+                الدروس المستفادة ستظهر هنا...
+            </p>
+            <button id="copyLessonsBtn"
+                    class="mt-4 bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-lg
+                           transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 text-sm">
+                نسخ الدروس
+            </button>
+            <span id="lessonsCopyStatus" class="text-sm text-green-600 ml-2 hidden">تم النسخ!</span>
+        </div>
+
+        <div id="practicalApplicationsDisplay" class="hidden mt-8 p-6 bg-teal-50 rounded-lg border border-teal-200 text-arabic">
+            <h3 class="text-xl font-semibold text-teal-800 mb-2">تطبيقات عملية:</h3>
+            <p class="text-teal-800 text-lg leading-relaxed" id="practicalApplicationsText">
+                التطبيقات العملية ستظهر هنا...
+            </p>
+            <button id="copyPracticalApplicationsBtn"
+                    class="mt-4 bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-lg
+                           transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 text-sm">
+                نسخ التطبيقات
+            </button>
+            <span id="practicalApplicationsCopyStatus" class="text-sm text-green-600 ml-2 hidden">تم النسخ!</span>
+        </div>
+
+        <div id="aiAnswerDisplay" class="hidden mt-8 p-6 bg-indigo-50 rounded-lg border border-indigo-200 text-arabic">
+            <h3 class="text-xl font-semibold text-indigo-800 mb-2">إجابة الذكاء الاصطناعي:</h3>
+            <p class="text-indigo-800 text-lg leading-relaxed" id="aiAnswerText">
+                الإجابة ستظهر هنا...
+            </p>
+            <button id="copyAIAnswerBtn"
+                    class="mt-4 bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-lg
+                           transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 text-sm">
+                نسخ الإجابة
+            </button>
+            <span id="aiAnswerCopyStatus" class="text-sm text-green-600 ml-2 hidden">تم النسخ!</span>
+        </div>
+
+        <div id="loadingIndicator" class="hidden mt-4 text-gray-600 font-medium">
+            جاري التحميل...
+        </div>
+
+        <div id="explanationLoadingIndicator" class="hidden mt-4 text-gray-600 font-medium">
+            جاري شرح الحديث...
+        </div>
+
+        <div id="lessonsLoadingIndicator" class="hidden mt-4 text-gray-600 font-medium">
+            جاري استخلاص الدروس...
+        </div>
+
+        <div id="practicalApplicationsLoadingIndicator" class="hidden mt-4 text-gray-600 font-medium">
+            جاري اقتراح تطبيقات عملية...
+        </div>
+
+        <div id="aiAnswerLoadingIndicator" class="hidden mt-4 text-gray-600 font-medium">
+            جاري الإجابة...
+        </div>
+
+        <div id="errorDisplay" class="hidden mt-4 p-3 bg-red-100 text-red-700 rounded-lg border border-red-200">
+            عذراً، حدث خطأ أثناء جلب الحديث. يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.
+        </div>
+
+        <div id="explanationErrorDisplay" class="hidden mt-4 p-3 bg-red-100 text-red-700 rounded-lg border border-red-200">
+            عذراً، حدث خطأ أثناء شرح الحديث. يرجى المحاولة مرة أخرى.
+        </div>
+
+        <div id="lessonsErrorDisplay" class="hidden mt-4 p-3 bg-red-100 text-red-700 rounded-lg border border-red-200">
+            عذراً، حدث خطأ أثناء استخلاص الدروس. يرجى المحاولة مرة أخرى.
+        </div>
+
+        <div id="practicalApplicationsErrorDisplay" class="hidden mt-4 p-3 bg-red-100 text-red-700 rounded-lg border border-red-200">
+            عذراً، حدث خطأ أثناء اقتراح تطبيقات عملية. يرجى المحاولة مرة أخرى.
+        </div>
+
+        <div id="aiAnswerErrorDisplay" class="hidden mt-4 p-3 bg-red-100 text-red-700 rounded-lg border border-red-200">
+            عذراً، حدث خطأ أثناء معالجة سؤالك. يرجى المحاولة مرة أخرى.
+        </div>
+    </div>
+
+    <script>
+        // الحصول على المراجع إلى عناصر DOM باستخدام معرفاتها
+        const fetchNewHadithBtn = document.getElementById('fetchNewHadithBtn');
+        const explainHadithBtn = document.getElementById('explainHadithBtn');
+        const extractLessonsBtn = document.getElementById('extractLessonsBtn');
+        const practicalApplicationsBtn = document.getElementById('practicalApplicationsBtn');
+        const searchInput = document.getElementById('searchInput');
+        const askAIBtn = document.getElementById('askAIBtn');
+
+        const hadithText = document.getElementById('hadithText');
+        const hadithSource = document.getElementById('hadithSource');
+        const copyHadithBtn = document.getElementById('copyHadithBtn');
+        const hadithCopyStatus = document.getElementById('hadithCopyStatus');
+
+        const explanationDisplay = document.getElementById('explanationDisplay');
+        const explanationText = document.getElementById('explanationText');
+        const copyExplanationBtn = document.getElementById('copyExplanationBtn');
+        const explanationCopyStatus = document.getElementById('explanationCopyStatus');
+
+        const lessonsDisplay = document.getElementById('lessonsDisplay');
+        const lessonsText = document.getElementById('lessonsText');
+        const copyLessonsBtn = document.getElementById('copyLessonsBtn');
+        const lessonsCopyStatus = document.getElementById('lessonsCopyStatus');
+
+        const practicalApplicationsDisplay = document.getElementById('practicalApplicationsDisplay');
+        const practicalApplicationsText = document.getElementById('practicalApplicationsText');
+        const copyPracticalApplicationsBtn = document.getElementById('copyPracticalApplicationsBtn');
+        const practicalApplicationsCopyStatus = document.getElementById('practicalApplicationsCopyStatus');
+
+        const aiAnswerDisplay = document.getElementById('aiAnswerDisplay');
+        const aiAnswerText = document.getElementById('aiAnswerText');
+        const copyAIAnswerBtn = document.getElementById('copyAIAnswerBtn');
+        const aiAnswerCopyStatus = document.getElementById('aiAnswerCopyStatus');
+
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const explanationLoadingIndicator = document.getElementById('explanationLoadingIndicator');
+        const lessonsLoadingIndicator = document.getElementById('lessonsLoadingIndicator');
+        const practicalApplicationsLoadingIndicator = document.getElementById('practicalApplicationsLoadingIndicator');
+        const aiAnswerLoadingIndicator = document.getElementById('aiAnswerLoadingIndicator');
+        const errorDisplay = document.getElementById('errorDisplay');
+        const explanationErrorDisplay = document.getElementById('explanationErrorDisplay');
+        const lessonsErrorDisplay = document.getElementById('lessonsErrorDisplay');
+        const practicalApplicationsErrorDisplay = document.getElementById('practicalApplicationsErrorDisplay');
+        const aiAnswerErrorDisplay = document.getElementById('aiAnswerErrorDisplay');
+
+        // قائمة بكتب الحديث المتاحة وعدد الأحاديث فيها
+        const hadithBooksData = [
+            { name: "HR. Abu Daud", id: "abu-daud", available: 4419 },
+            { name: "HR. Ahmad", id: "ahmad", available: 4305 },
+            { name: "HR. Bukhari", id: "bukhari", available: 6638 },
+            { name: "HR. Darimi", id: "darimi", available: 2949 },
+            { name: "HR. Ibnu Majah", id: "ibnu-majah", available: 4285 },
+            { name: "HR. Malik", id: "malik", available: 1587 },
+            { name: "HR. Muslim", id: "muslim", available: 4930 },
+            { name: "HR. Nasai", id: "nasai", available: 5364 },
+            { name: "HR. Tirmidzi", id: "tirmidzi", available: 3625 }
+        ];
+
+        // متغيرات للتعامل مع Web Speech API (تم حذفها)
+        let synth;
+        let arabicVoice;
+
+        // تهيئة SpeechSynthesis (تم الاحتفاظ بها للقراءة الصوتية للإجابات)
+        if ('speechSynthesis' in window) {
+            synth = window.speechSynthesis;
+            synth.onvoiceschanged = () => {
+                const voices = synth.getVoices();
+                arabicVoice = voices.find(voice => voice.lang.startsWith('ar')) || voices.find(voice => voice.lang.includes('ar'));
+                if (!arabicVoice) {
+                    console.warn('لم يتم العثور على صوت عربي. سيتم استخدام الصوت الافتراضي.');
+                }
+            };
+        } else {
+            console.warn('متصفحك لا يدعم إخراج الصوت.');
+        }
+
+        /**
+         * دالة مساعدة لتعطيل أو تفعيل جميع الأزرار.
+         * @param {boolean} disable - true لتعطيل الأزرار، false لتفعيلها.
+         */
+        function disableAllButtons(disable) {
+            fetchNewHadithBtn.disabled = disable;
+            explainHadithBtn.disabled = disable;
+            extractLessonsBtn.disabled = disable;
+            practicalApplicationsBtn.disabled = disable;
+            askAIBtn.disabled = disable;
+            copyHadithBtn.disabled = disable;
+            copyExplanationBtn.disabled = disable;
+            copyLessonsBtn.disabled = disable;
+            copyPracticalApplicationsBtn.disabled = disable;
+            copyAIAnswerBtn.disabled = disable;
+        }
+
+        // وظيفة مساعدة لإخفاء جميع رسائل الحالة والمناطق الإضافية وحالات النسخ
+        function hideAllStatusMessages() {
+            loadingIndicator.classList.add('hidden');
+            explanationLoadingIndicator.classList.add('hidden');
+            lessonsLoadingIndicator.classList.add('hidden');
+            practicalApplicationsLoadingIndicator.classList.add('hidden');
+            aiAnswerLoadingIndicator.classList.add('hidden');
+            errorDisplay.classList.add('hidden');
+            explanationErrorDisplay.classList.add('hidden');
+            lessonsErrorDisplay.classList.add('hidden');
+            practicalApplicationsErrorDisplay.classList.add('hidden');
+            aiAnswerErrorDisplay.classList.add('hidden');
+            explanationDisplay.classList.add('hidden');
+            lessonsDisplay.classList.add('hidden');
+            practicalApplicationsDisplay.classList.add('hidden');
+            aiAnswerDisplay.classList.add('hidden');
+
+            // إخفاء رسائل حالة النسخ
+            hadithCopyStatus.classList.add('hidden');
+            explanationCopyStatus.classList.add('hidden');
+            lessonsCopyStatus.classList.add('hidden');
+            practicalApplicationsCopyStatus.classList.add('hidden');
+            aiAnswerCopyStatus.classList.add('hidden');
+        }
+
+        /**
+         * دالة مساعدة لنسخ النص إلى الحافظة.
+         * تستخدم document.execCommand('copy') لأن navigator.clipboard قد لا يعمل في بيئات iframe.
+         * @param {string} textToCopy - النص المراد نسخه.
+         * @param {HTMLElement} statusElement - العنصر الذي سيعرض رسالة الحالة (مثل "تم النسخ!").
+         */
+        function copyTextToClipboard(textToCopy, statusElement) {
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = textToCopy;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            try {
+                document.execCommand('copy');
+                if (statusElement) {
+                    statusElement.classList.remove('hidden');
+                    setTimeout(() => {
+                        statusElement.classList.add('hidden');
+                    }, 2000); // إخفاء الرسالة بعد 2 ثانية
+                }
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+                // يمكن إضافة رسالة خطأ مرئية للمستخدم هنا إذا لزم الأمر
+            } finally {
+                document.body.removeChild(tempTextArea);
+            }
+        }
+
+        /**
+         * دالة غير متزامنة لجلب حديث عشوائي من كتاب محدد.
+         * يتم اختيار رقم عشوائي ضمن مدى الأحاديث المتاحة في الكتاب.
+         */
+        async function fetchHadithOfTheDay() {
+            hideAllStatusMessages(); // إخفاء جميع الرسائل قبل البدء
+            loadingIndicator.classList.remove('hidden');
+            disableAllButtons(true); // تعطيل جميع الأزرار
+
+            try {
+                // اختيار كتاب عشوائي من قائمة الكتب المتاحة
+                const randomBookData = hadithBooksData[Math.floor(Math.random() * hadithBooksData.length)];
+                const randomBookId = randomBookData.id;
+                const maxHadithNumber = randomBookData.available;
+
+                // اختيار رقم حديث عشوائي ضمن النطاق المتاح لهذا الكتاب
+                const randomHadithNumber = Math.floor(Math.random() * maxHadithNumber) + 1;
+
+                const apiUrl = `https://api.hadith.gading.dev/books/${randomBookId}/${randomHadithNumber}`;
+                const response = await fetch(apiUrl);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data && data.data && data.data.contents && data.data.contents.arab) {
+                    hadithText.textContent = data.data.contents.arab;
+                    hadithSource.textContent = `المصدر: ${data.data.name} - حديث رقم ${data.data.contents.number}`;
+                } else {
+                    console.warn(`Hadith not found for ${randomBookId} at number ${randomHadithNumber}. Trying again.`);
+                    await fetchHadithOfTheDay();
+                    return;
+                }
+
+            } catch (error) {
+                console.error('حدث خطأ أثناء جلب الحديث:', error);
+                errorDisplay.classList.remove('hidden');
+                hadithText.textContent = 'تعذر جلب الحديث. يرجى المحاولة لاحقاً.';
+                hadithSource.textContent = 'المصدر: -';
+            } finally {
+                loadingIndicator.classList.add('hidden');
+                disableAllButtons(false); // إعادة تفعيل جميع الأزرار
+            }
+        }
+
+        /**
+         * دالة غير متزامنة لشرح الحديث باستخدام Gemini API.
+         */
+        async function explainHadith() {
+            const currentHadith = hadithText.textContent;
+
+            if (!currentHadith || currentHadith.includes('اضغط على الزر') || currentHadith.includes('تعذر جلب الحديث') || currentHadith.includes('لم يتم العثور على حديث')) {
+                explanationText.textContent = 'يرجى جلب حديث أولاً قبل طلب الشرح.';
+                explanationDisplay.classList.remove('hidden');
+                return;
+            }
+
+            hideAllStatusMessages(); // إخفاء جميع الرسائل والمناطق الأخرى
+            explanationLoadingIndicator.classList.remove('hidden');
+            disableAllButtons(true); // تعطيل جميع الأزرار
+
+            try {
+                const prompt = `اشرح الحديث التالي بأسلوب مبسط ومختصر، مع التركيز على المعنى العام والفائدة المستفادة منه، وبما لا يتجاوز 150 كلمة، مع ذكر المصدر إن أمكن: "${currentHadith}"`;
+
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const explanation = result.candidates[0].content.parts[0].text;
+                    explanationText.textContent = explanation;
+                    explanationDisplay.classList.remove('hidden');
+                } else {
+                    throw new Error('هناك خطا بسبب الشرح بواسطه الذكاء الاصطناعي');
+                }
+
+            } catch (error) {
+                console.error('حدث خطأ أثناء شرح الحديث:', error);
+                explanationErrorDisplay.classList.remove('hidden');
+                explanationText.textContent = 'تعذر شرح الحديث. يرجى المحاولة لاحقاً.';
+                explanationDisplay.classList.remove('hidden');
+            } finally {
+                explanationLoadingIndicator.classList.add('hidden');
+                disableAllButtons(false); // إعادة تفعيل جميع الأزرار
+            }
+        }
+
+        /**
+         * دالة غير متزامنة لاستخلاص الدروس المستفادة من الحديث باستخدام Gemini API.
+         */
+        async function extractLessons() {
+            const currentHadith = hadithText.textContent;
+
+            if (!currentHadith || currentHadith.includes('اضغط على الزر') || currentHadith.includes('تعذر جلب الحديث') || currentHadith.includes('لم يتم العثور على حديث')) {
+                lessonsText.textContent = 'يرجى جلب حديث أولاً قبل طلب استخلاص الدروس.';
+                lessonsDisplay.classList.remove('hidden');
+                return;
+            }
+
+            hideAllStatusMessages(); // إخفاء جميع الرسائل والمناطق الأخرى
+            lessonsLoadingIndicator.classList.remove('hidden');
+            disableAllButtons(true); // تعطيل جميع الأزرار
+
+            try {
+                const prompt = `استخلص أهم 3-5 دروس أو فوائد مستفادة من الحديث التالي بأسلوب نقطي ومختصر: "${currentHadith}"`;
+
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const lessons = result.candidates[0].content.parts[0].text;
+                    lessonsText.textContent = lessons;
+                    lessonsDisplay.classList.remove('hidden');
+                } else {
+                    throw new Error('لم يتم الحصول على دروس من Gemini API.');
+                }
+
+            } catch (error) {
+                console.error('حدث خطأ أثناء استخلاص الدروس:', error);
+                lessonsErrorDisplay.classList.remove('hidden');
+                lessonsText.textContent = 'تعذر استخلاص الدروس. يرجى المحاولة لاحقاً.';
+                lessonsDisplay.classList.remove('hidden');
+            } finally {
+                lessonsLoadingIndicator.classList.add('hidden');
+                disableAllButtons(false); // إعادة تفعيل جميع الأزرار
+            }
+        }
+
+        /**
+         * دالة غير متزامنة لاقتراح تطبيقات عملية للحديث باستخدام Gemini API.
+         */
+        async function generatePracticalApplications() {
+            const currentHadith = hadithText.textContent;
+
+            if (!currentHadith || currentHadith.includes('اضغط على الزر') || currentHadith.includes('تعذر جلب الحديث') || currentHadith.includes('لم يتم العثور على حديث')) {
+                practicalApplicationsText.textContent = 'يرجى جلب حديث أولاً قبل طلب تطبيقات عملية.';
+                practicalApplicationsDisplay.classList.remove('hidden');
+                return;
+            }
+
+            hideAllStatusMessages(); // إخفاء جميع الرسائل والمناطق الأخرى
+            practicalApplicationsLoadingIndicator.classList.remove('hidden');
+            disableAllButtons(true); // تعطيل جميع الأزرار
+
+            try {
+                const prompt = `بناءً على الحديث التالي، اقترح 3-5 تطبيقات عملية أو خطوات يمكن للمسلم اتخاذها في حياته اليومية لتطبيق هذا الحديث، بأسلوب نقطي ومختصر: "${currentHadith}"`;
+
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const applications = result.candidates[0].content.parts[0].text;
+                    practicalApplicationsText.textContent = applications;
+                    practicalApplicationsDisplay.classList.remove('hidden');
+                } else {
+                    throw new Error('لم يتم الحصول على تطبيقات عملية من Gemini API.');
+                }
+
+            } catch (error) {
+                console.error('حدث خطأ أثناء اقتراح تطبيقات عملية:', error);
+                practicalApplicationsErrorDisplay.classList.remove('hidden');
+                practicalApplicationsText.textContent = 'تعذر اقتراح تطبيقات عملية. يرجى المحاولة لاحقاً.';
+                practicalApplicationsDisplay.classList.remove('hidden');
+            } finally {
+                practicalApplicationsLoadingIndicator.classList.add('hidden');
+                disableAllButtons(false); // إعادة تفعيل جميع الأزرار
+            }
+        }
+
+        /**
+         * دالة غير متزامنة للإجابة على سؤال المستخدم باستخدام Gemini API.
+         */
+        async function askAI() {
+            const query = searchInput.value.trim();
+
+            if (!query) {
+                aiAnswerText.textContent = 'الرجاء إدخال سؤالك.';
+                aiAnswerDisplay.classList.remove('hidden');
+                return;
+            }
+
+            hideAllStatusMessages(); // إخفاء جميع الرسائل والمناطق الأخرى
+            aiAnswerLoadingIndicator.classList.remove('hidden');
+            disableAllButtons(true); // تعطيل جميع الأزرار
+
+            try {
+                const prompt = `أجب على السؤال التالي بناءً على معرفتك بالأحاديث والمفاهيم الإسلامية: "${query}". قدم إجابة شاملة ومختصرة.`;
+
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const answer = result.candidates[0].content.parts[0].text;
+                    aiAnswerText.textContent = answer;
+                    aiAnswerDisplay.classList.remove('hidden');
+
+                    // قراءة الإجابة بصوت عالٍ (تم الاحتفاظ بها)
+                    if (synth && arabicVoice) {
+                        const utterance = new SpeechSynthesisUtterance(answer);
+                        utterance.voice = arabicVoice;
+                        utterance.lang = 'ar-SA';
+                        synth.speak(utterance);
+                    } else if (synth) {
+                        const utterance = new SpeechSynthesisUtterance(answer);
+                        synth.speak(utterance);
+                    }
+
+                } else {
+                    throw new Error('لم يتم الحصول على إجابة من الذكاء الاصطناعي.');
+                }
+
+            } catch (error) {
+                console.error('حدث خطأ أثناء الإجابة على السؤال:', error);
+                aiAnswerErrorDisplay.classList.remove('hidden');
+                aiAnswerText.textContent = 'تعذر الإجابة على سؤالك. يرجى المحاولة لاحقاً.';
+                aiAnswerDisplay.classList.remove('hidden');
+            } finally {
+                aiAnswerLoadingIndicator.classList.add('hidden');
+                disableAllButtons(false); // إعادة تفعيل جميع الأزرار
+            }
+        }
+
+        // إضافة مستمع حدث 'click' لزر جلب حديث جديد
+        fetchNewHadithBtn.addEventListener('click', fetchHadithOfTheDay);
+
+        // إضافة مستمع حدث 'click' لزر شرح الحديث
+        explainHadithBtn.addEventListener('click', explainHadith);
+
+        // إضافة مستمع حدث 'click' لزر استخلاص الدروس
+        extractLessonsBtn.addEventListener('click', extractLessons);
+
+        // إضافة مستمع حدث 'click' لزر التطبيقات العملية
+        practicalApplicationsBtn.addEventListener('click', generatePracticalApplications);
+
+        // إضافة مستمع حدث 'click' لزر اسأل الذكاء الاصطناعي
+        askAIBtn.addEventListener('click', askAI);
+
+        // إضافة مستمعات الأحداث لأزرار النسخ
+        copyHadithBtn.addEventListener('click', () => copyTextToClipboard(hadithText.textContent, hadithCopyStatus));
+        copyExplanationBtn.addEventListener('click', () => copyTextToClipboard(explanationText.textContent, explanationCopyStatus));
+        copyLessonsBtn.addEventListener('click', () => copyTextToClipboard(lessonsText.textContent, lessonsCopyStatus));
+        copyPracticalApplicationsBtn.addEventListener('click', () => copyTextToClipboard(practicalApplicationsText.textContent, practicalApplicationsCopyStatus));
+        copyAIAnswerBtn.addEventListener('click', () => copyTextToClipboard(aiAnswerText.textContent, aiAnswerCopyStatus));
+
+
+        // جلب حديث تلقائيًا عند تحميل الصفحة لأول مرة
+        document.addEventListener('DOMContentLoaded', fetchHadithOfTheDay);
+    </script>
+</body>
+</html>
